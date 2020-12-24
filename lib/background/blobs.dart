@@ -52,12 +52,12 @@ class Blobs extends StatelessWidget {
           ),
         ),
         BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
+          filter: ImageFilter.blur(sigmaX: 18.0, sigmaY: 18.0),
           child: Container(
             height: height,
             width: width,
             decoration:
-                BoxDecoration(color: Color(0xFFA697FF).withOpacity(0.5)),
+                BoxDecoration(color: Color(0xFFA697FF).withOpacity(0.6)),
           ),
         )
       ],
