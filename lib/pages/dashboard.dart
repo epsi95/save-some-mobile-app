@@ -10,8 +10,8 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  double expenseLimit = 250.5;
-  double limit = 300;
+  double expenseLimit = 120;
+  double savings = 80;
   String currencySign = '₹';
 
   @override
@@ -58,14 +58,22 @@ class _DashboardState extends State<Dashboard> {
                     )
                   ],
                 ),
+                Text(
+                  'Today\'s expenditure',
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
                 Container(
-                  padding: EdgeInsets.all(4.0),
+                  margin: EdgeInsets.all(10.0),
+                  padding:
+                      EdgeInsets.symmetric(vertical: 4.0, horizontal: 10.0),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20.0),
                     color: Colors.white.withOpacity(0.3),
                   ),
                   child: Text(
-                    "Limit $limit",
+                    "Savings $savings",
                     style: TextStyle(color: Colors.white),
                   ),
                 )

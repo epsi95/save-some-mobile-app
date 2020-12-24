@@ -3,18 +3,19 @@ import 'package:flutter/material.dart';
 
 LineChartData data({type: 'weekly'}) {
   List<String> weekDataLabel = [
+    'THU',
+    'FRI',
+    'SAT',
     'SUN',
     'MON',
     'TUE',
-    'WED',
-    'THU',
-    'FRI',
-    'SAT'
+    'WED'
   ];
   List<double> weekData = [50.0, 100, 150, 40];
   double monthlyMaximumExpenditure = 3000.0;
   double weeklyMaximumExpenditure = monthlyMaximumExpenditure / 4;
-  double dailyMaximumExpenditure = weeklyMaximumExpenditure / 7;
+  double dailyMaximumExpenditure =
+      (weeklyMaximumExpenditure / 7).floor().toDouble();
 
   return (type == 'weekly')
       ? LineChartData(
@@ -58,16 +59,14 @@ LineChartData data({type: 'weekly'}) {
               },
             ),
             leftTitles: SideTitles(
+              interval: weeklyMaximumExpenditure / 3,
               showTitles: true,
               getTextStyles: (value) => const TextStyle(
                 color: Colors.white,
                 fontSize: 12,
               ),
               getTitles: (value) {
-                if (value == dailyMaximumExpenditure.toInt()) {
-                  return 'MAX';
-                }
-                return '';
+                return value.toInt().toString();
               },
               margin: 8,
               reservedSize: 30,
@@ -77,7 +76,7 @@ LineChartData data({type: 'weekly'}) {
             show: true,
             border: const Border(
               bottom: BorderSide(
-                color: Colors.white,
+                color: Color(0xFFFFFFFF),
                 width: 2,
               ),
               left: BorderSide(
@@ -93,15 +92,17 @@ LineChartData data({type: 'weekly'}) {
           ),
           minX: 0,
           maxX: weekDataLabel.length.toDouble(),
-          maxY: dailyMaximumExpenditure * 1.5,
+          maxY: weeklyMaximumExpenditure * 1.2,
           minY: 0,
-          lineBarsData: weeklyLineBarData(weekData, dailyMaximumExpenditure),
+          lineBarsData: weeklyLineBarData(
+              weekData, dailyMaximumExpenditure, weeklyMaximumExpenditure),
         )
       : null;
 }
 
-List<LineChartBarData> weeklyLineBarData(
-    List<double> weekData, double dailyMaximumExpenditure) {
+List<LineChartBarData> weeklyLineBarData(List<double> weekData,
+    double dailyMaximumExpenditure, double weeklyMaximumExpenditure) {
+  print(weeklyMaximumExpenditure);
   List<FlSpot> data = [];
   weekData.asMap().forEach((key, value) {
     data.add(FlSpot((key + 1).toDouble(), value));
@@ -121,7 +122,7 @@ List<LineChartBarData> weeklyLineBarData(
       show: false,
     ),
   );
-  final LineChartBarData maxUsageLineData = LineChartBarData(
+  final LineChartBarData maxDailyUsageLineData = LineChartBarData(
     spots: [
       FlSpot(1, dailyMaximumExpenditure),
       FlSpot(2, dailyMaximumExpenditure),
@@ -133,7 +134,7 @@ List<LineChartBarData> weeklyLineBarData(
     ],
     isCurved: true,
     colors: [
-      const Color(0xFFFFFFFF),
+      const Color(0x7DFFFFFF),
     ],
     barWidth: 2,
     isStrokeCapRound: true,
@@ -144,5 +145,75 @@ List<LineChartBarData> weeklyLineBarData(
       show: false,
     ),
   );
-  return [actualUsageLineData, maxUsageLineData];
+  final LineChartBarData maxWeeklyUsageLineData = LineChartBarData(
+    spots: [
+      FlSpot(1, weeklyMaximumExpenditure),
+      FlSpot(2, weeklyMaximumExpenditure),
+      FlSpot(3, weeklyMaximumExpenditure),
+      FlSpot(4, weeklyMaximumExpenditure),
+      FlSpot(5, weeklyMaximumExpenditure),
+      FlSpot(6, weeklyMaximumExpenditure),
+      FlSpot(7, weeklyMaximumExpenditure),
+    ],
+    isCurved: true,
+    colors: [
+      const Color(0x7DFFFFFF),
+    ],
+    barWidth: 2,
+    isStrokeCapRound: true,
+    dotData: FlDotData(
+      show: false,
+    ),
+    belowBarData: BarAreaData(
+      show: false,
+    ),
+  );
+  final LineChartBarData weeklyCumulativeLineData = LineChartBarData(
+    spots: [
+      FlSpot(1, 50.0),
+      FlSpot(2, 50.0 + 100.0),
+      FlSpot(3, 50.0 + 100.0 + 150.0),
+      FlSpot(4, 50.0 + 100.0 + 150.0 + 40.0),
+    ],
+    isCurved: true,
+    colors: [
+      const Color(0x7DFFFFFF),
+    ],
+    barWidth: 2,
+    isStrokeCapRound: true,
+    dotData: FlDotData(
+      show: false,
+    ),
+    belowBarData: BarAreaData(
+      show: false,
+    ),
+  );
+  final LineChartBarData predictionLineData = LineChartBarData(
+    spots: [
+      FlSpot(4, 40.0),
+      FlSpot(5, 90.0),
+      FlSpot(6, 92.0),
+      FlSpot(7, 94.0),
+    ],
+    dashArray: [5, 10],
+    isCurved: true,
+    colors: [
+      const Color(0x7DFFFFFF),
+    ],
+    barWidth: 6,
+    isStrokeCapRound: true,
+    dotData: FlDotData(
+      show: false,
+    ),
+    belowBarData: BarAreaData(
+      show: false,
+    ),
+  );
+  return [
+    actualUsageLineData,
+    maxDailyUsageLineData,
+    predictionLineData,
+    maxWeeklyUsageLineData,
+    weeklyCumulativeLineData
+  ];
 }
