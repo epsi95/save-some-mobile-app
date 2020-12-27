@@ -13,7 +13,7 @@ class PlasmaBackground extends StatelessWidget {
         children: [
           Plasma(
             particles: 10,
-            foregroundColor: Color(0x6642a5f5),
+            foregroundColor: Color(0x66EE0072),
             backgroundColor: Color(0xFF6200EE),
             size: 1.00,
             speed: 6.00,
@@ -22,12 +22,12 @@ class PlasmaBackground extends StatelessWidget {
             child: Container(), // your UI here
           ),
           BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 18.0, sigmaY: 18.0),
+            filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
             child: Container(
               height: height,
               width: width,
               decoration:
-                  BoxDecoration(color: Colors.grey.shade200.withOpacity(0.5)),
+                  BoxDecoration(color: Colors.grey.shade200.withOpacity(0.4)),
             ),
           )
         ],
