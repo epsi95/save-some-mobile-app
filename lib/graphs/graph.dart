@@ -107,7 +107,7 @@ List<LineChartBarData> weeklyLineBarData(
     barWidth: 5,
     isStrokeCapRound: true,
     dotData: FlDotData(
-      show: false,
+      show: true,
     ),
     belowBarData: BarAreaData(
       show: false,

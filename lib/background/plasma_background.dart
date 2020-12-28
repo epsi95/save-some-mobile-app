@@ -13,8 +13,8 @@ class PlasmaBackground extends StatelessWidget {
         children: [
           Plasma(
             particles: 10,
-            foregroundColor: Color(0x66EE0072),
-            backgroundColor: Color(0xFF6200EE),
+            foregroundColor: Color(0x66ae00ff),
+            backgroundColor: Color(0xFFae00ff),
             size: 1.00,
             speed: 6.00,
             offset: 0.00,

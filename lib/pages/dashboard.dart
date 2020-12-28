@@ -7,10 +7,17 @@ import 'package:savesome/background/blobs.dart';
 import 'package:savesome/background/plasma_background.dart';
 import 'package:savesome/graphs/graph.dart';
 import 'package:savesome/custom_element/graph_toggle_button.dart';
+import 'package:savesome/pages/my_details.dart';
 import 'package:savesome/utils/database.dart';
 import 'package:savesome/utils/multi_number_animation.dart';
 
 class Dashboard extends StatefulWidget {
+  final double todayExpenditure;
+  final double savings;
+  final String currencySign;
+  final Map graphData;
+  Dashboard(
+      this.todayExpenditure, this.savings, this.currencySign, this.graphData);
   @override
   _DashboardState createState() => _DashboardState();
 }
@@ -23,8 +30,8 @@ class _DashboardState extends State<Dashboard> {
   Map _graphData;
   Widget _graphPlaceHolderWidget = Container();
   bool _takeUserInput = false;
-  TextEditingController tc = TextEditingController();
-  TextEditingController whatForController = TextEditingController();
+  TextEditingController _tc = TextEditingController();
+  TextEditingController _whatForController = TextEditingController();
 
   void _buttonPressed(buttonName) {
     _currentGraphType = buttonName;
@@ -47,7 +54,7 @@ class _DashboardState extends State<Dashboard> {
               children: <Widget>[
                 TextField(
                   autofocus: true,
-                  controller: whatForController,
+                  controller: _whatForController,
                   decoration: InputDecoration(
                       icon: Icon(
                         Icons.title,
@@ -58,7 +65,7 @@ class _DashboardState extends State<Dashboard> {
                 TextField(
                   keyboardType: TextInputType.number,
                   autofocus: true,
-                  controller: tc,
+                  controller: _tc,
                   decoration: InputDecoration(
                       icon: Icon(
                         Icons.account_balance_wallet,
@@ -74,15 +81,17 @@ class _DashboardState extends State<Dashboard> {
               child: Text('OK'),
               onPressed: () {
                 try {
-                  print(double.parse(tc.text.toString()));
-                  setState(() {
-                    _todayExpenditure += double.parse(tc.text.toString());
-                    _todayExpenditure =
-                        _todayExpenditure < 0.0 ? 0.0 : _todayExpenditure;
-                    tc.clear();
-                    whatForController.clear();
-                  });
-                  print(_todayExpenditure);
+                  print(double.parse(_tc.text.toString()));
+                  double tmp = double.parse(_tc.text.toString());
+                  String whatFor = _whatForController.text.toString();
+                  if (_todayExpenditure + tmp < 0.0) {
+                    print('can\'t go below 0');
+                  } else {
+                    DataBase.insertIntoDataBase(tmp, whatFor);
+                  }
+                  _tc.clear();
+                  _whatForController.clear();
+                  _initializeParameters();
                 } catch (e) {
                   print('unable to parse $e');
                 }
@@ -96,9 +105,11 @@ class _DashboardState extends State<Dashboard> {
   }
 
   void _initializeGraph() async {
-    _graphData = _currentGraphType == 'week'
-        ? await DataBase.getWeekData()
-        : await DataBase.getMonthData();
+    if (_currentGraphType == 'week') {
+      _graphData = await DataBase.getWeekData();
+    } else {
+      _graphData = await DataBase.getWeekData();
+    }
     _graphPlaceHolderWidget = LineChart(
       weekLineChart(_graphData),
       swapAnimationDuration: const Duration(milliseconds: 250),
@@ -107,9 +118,10 @@ class _DashboardState extends State<Dashboard> {
   }
 
   void _initializeParameters() async {
-    await DataBase.openDataBase();
     _todayExpenditure = await DataBase.getTodayExpenditure();
+    print(_todayExpenditure);
     _savings = await DataBase.getDailyUsageLimit() - _todayExpenditure;
+    _savings = (_savings * 10).roundToDouble() / 10;
     _currencySign = await DataBase.getCurrencySign();
 
     _takeUserInput = true;
@@ -118,14 +130,22 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   void initState() {
-    _initializeParameters();
+    _todayExpenditure = widget.todayExpenditure;
+    _savings = widget.savings;
+    _currencySign = widget.currencySign;
+    _graphData = widget.graphData;
+    _graphPlaceHolderWidget = LineChart(
+      weekLineChart(_graphData),
+      swapAnimationDuration: const Duration(milliseconds: 250),
+    );
+    _takeUserInput = true;
     super.initState();
   }
 
   @override
   void dispose() {
-    tc.dispose();
-    whatForController.dispose();
+    _tc.dispose();
+    _whatForController.dispose();
     super.dispose();
   }
 
@@ -152,14 +172,87 @@ class _DashboardState extends State<Dashboard> {
                           }
                         : null,
                   ),
-                  IconButton(
-                    icon: Icon(Icons.more_vert),
-                    iconSize: 28,
-                    color: Colors.white,
-                    onPressed: () {
-                      print(_todayExpenditure.toString().split('.')[0]);
-                    },
-                  )
+                  PopupMenuButton<PopUpMenuItems>(
+                      icon: Icon(
+                        Icons.more_vert,
+                        size: 28,
+                        color: Colors.white,
+                      ),
+                      onSelected: (PopUpMenuItems i) async {
+                        switch (i) {
+                          case PopUpMenuItems.deleteDataBase:
+                            DataBase.deleteAllData();
+                            _initializeParameters();
+                            break;
+                          case PopUpMenuItems.printAll:
+                            DataBase.printAllDataFromDataBase();
+                            break;
+                          case PopUpMenuItems.limit:
+                            double monthlyUsageLimit =
+                                await DataBase.getMonthlyUsageLimit();
+                            String currency = await DataBase.getCurrencySign();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => MyDetails(
+                                  monthlyUsageLimit: monthlyUsageLimit,
+                                  currencySymbol: currency,
+                                ),
+                              ),
+                            ).then((value) {
+                              _initializeParameters();
+                            });
+                            break;
+                          default:
+                            print(i);
+                        }
+                      },
+                      itemBuilder: (BuildContext context) =>
+                          <PopupMenuEntry<PopUpMenuItems>>[
+                            const PopupMenuItem<PopUpMenuItems>(
+                              value: PopUpMenuItems.limit,
+                              child: Text(
+                                'Settings',
+                                textScaleFactor: 1.0,
+                              ),
+                            ),
+                            const PopupMenuItem<PopUpMenuItems>(
+                              value: PopUpMenuItems.history,
+                              child: Text(
+                                'History Check',
+                                textScaleFactor: 1.0,
+                              ),
+                            ),
+                            const PopupMenuItem<PopUpMenuItems>(
+                              value: PopUpMenuItems.deleteDataBase,
+                              child: Text(
+                                'Delete Old Data',
+                                textScaleFactor: 1.0,
+                              ),
+                            ),
+                            const PopupMenuItem<PopUpMenuItems>(
+                              value: PopUpMenuItems.printAll,
+                              child: Text(
+                                'PrintAllData',
+                                textScaleFactor: 1.0,
+                              ),
+                            ),
+                            const PopupMenuItem<PopUpMenuItems>(
+                              value: PopUpMenuItems.about,
+                              child: Text(
+                                'About',
+                                textScaleFactor: 1.0,
+                              ),
+                            ),
+                          ]),
+//                  IconButton(
+//                    icon: Icon(Icons.more_vert),
+//                    iconSize: 28,
+//                    color: Colors.white,
+//                    onPressed: () {
+//                      DataBase.printAllDataFromDataBase();
+//                    },
+//                  )
                 ],
               ),
             ),
@@ -235,3 +328,5 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 }
+
+enum PopUpMenuItems { limit, history, deleteDataBase, about, printAll }

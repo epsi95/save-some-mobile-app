@@ -3,8 +3,8 @@ import 'package:linalg/linalg.dart';
 
 List calculatePolynomialRegression(List input, List predictionFor) {
   // calculate polynomial regression of degree 2
-  if (input.length == 0) {
-    return input;
+  if (input.length < 3) {
+    return [];
   } else {
     int sizeOfInput = input.length;
 
@@ -18,7 +18,8 @@ List calculatePolynomialRegression(List input, List predictionFor) {
     double sum_xi_yi = 0.0;
     double sum_xi_2_yi = 0.0;
 
-    input.asMap().forEach((index, e) {
+    input.asMap().forEach((i, e) {
+      double index = i + 1.0;
       sum_xi += index;
       sum_xi_2 += pow(index, 2);
       sum_xi_3 += pow(index, 3);
@@ -49,6 +50,6 @@ double prediction(Vector v, double x) {
   return r;
 }
 
-//void main() {
-//  print(calculatePolynomialRegression([20, 32, 40, 34, 56], [5, 6]));
-//}
+void main() {
+  print(calculatePolynomialRegression([20, 0, 5], [4, 5, 6, 7]));
+}
